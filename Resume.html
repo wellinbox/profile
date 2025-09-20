@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>กฤษฎา เมืองบุญ - แฟ้มผลงาน</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
+      font-family: 'Courier New', monospace;
+      color: #00ffcc;
+      overflow-x: hidden;
+    }
+    .glitch {
+      position: relative;
+      animation: glitch 1s linear infinite;
+    }
+    @keyframes glitch {
+      2%, 64% { transform: translate(2px, 0) skew(0deg); }
+      4%, 60% { transform: translate(-2px, 0) skew(0deg); }
+      62% { transform: translate(0, 0) skew(5deg); }
+    }
+    .neon-text {
+      text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+    }
+    .section-slide-in {
+      opacity: 0;
+      transform: translateX(-50px);
+      transition: all 0.8s ease-out;
+    }
+    .section-slide-in.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .matrix-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.1;
+    }
+    .profile-img {
+      border: 2px solid #00ffcc;
+      box-shadow: 0 0 20px #00ffcc;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .profile-img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px #00ffcc, 0 0 50px #00ffcc;
+    }
+    .card {
+      background: rgba(0, 255, 204, 0.1);
+      border: 1px solid #00ffcc;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 20px #00ffcc;
+    }
+    #particles-js {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+    }
+  </style>
+</head>
+<body>
+  <div id="particles-js"></div>
+  <canvas id="matrix" class="matrix-bg"></canvas>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect } = React;
+
+    const MatrixBackground = () => {
+      useEffect(() => {
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+        const chars = '0101กฤษฎาคอมพิวเตอร์วิศวกรรมกาฬสินธุ์';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function draw() {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#00ffcc';
+          ctx.font = fontSize + 'px monospace';
+
+          for (let i = 0; i < drops.length; i++) {
+            const text = chars.charAt(Math.floor(Math.random() * chars.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+              drops[i] = 0;
+            }
+            drops[i]++;
+          }
+        }
+
+        const interval = setInterval(draw, 33);
+        return () => clearInterval(interval);
+      }, []);
+
+      return null;
+    };
+
+    const ParticleBackground = () => {
+      useEffect(() => {
+        particlesJS('particles-js', {
+          particles: {
+            number: { value: 80, density: { enable: true, value_area: 800 } },
+            color: { value: '#00ffcc' },
+            shape: { type: 'circle' },
+            opacity: { value: 0.5, random: true },
+            size: { value: 3, random: true },
+            line_linked: { enable: true, distance: 150, color: '#00ffcc', opacity: 0.4, width: 1 },
+            move: { enable: true, speed: 2, direction: 'none', random: false }
+          },
+          interactivity: {
+            detect_on: 'canvas',
+            events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' } },
+            modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
+          },
+          retina_detect: true
+        });
+      }, []);
+
+      return null;
+    };
+
+    const Section = ({ title, children }) => {
+      useEffect(() => {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
+
+        const sections = document.querySelectorAll('.section-slide-in');
+        sections.forEach((section) => observer.observe(section));
+        return () => observer.disconnect();
+      }, []);
+
+      return (
+        <section className="section-slide-in py-12 px-6 md:px-12">
+          <h2 className="text-3xl md:text-4xl font-bold neon-text mb-6">{title}</h2>
+          <div className="text-lg">{children}</div>
+        </section>
+      );
+    };
+
+    const App = () => {
+      return (
+        <div className="min-h-screen">
+          <ParticleBackground />
+          <MatrixBackground />
+          <header className="py-12 text-center">
+            <img
+              src="https://chatgpt.com/backend-api/public_content/enc/eyJpZCI6Im1fNjg4ODJlZTFmOWM0ODE5MTkyNmQ3NmYzMzY1ODA1NjQ6ZmlsZV8wMDAwMDAwMDU5YTA2MjMwYmQ2N2NmMmU1NWU0MDA2NyIsInRzIjoiNDg3MTU0IiwicCI6InB5aSIsInNpZyI6IjU1OTUwNzAzY2IwNWIzZDRmNGY1ZjFiMzBjYWVmZGExYmRiMmEzNzViODE3OGMwMWJjYTAyMTUxZjdkNTdkM2UiLCJ2IjoiMCIsImdpem1vX2lkIjpudWxsfQ=="
+              alt="Krissada Profile"
+              className="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-full profile-img mb-4"
+            />
+            <h1 className="text-5xl md:text-6xl font-bold glitch neon-text">
+              กฤษฎา เมืองบุญ
+            </h1>
+            <p className="text-xl md:text-2xl mt-4 text-gray-300">
+              นักศึกษา วิศวกรรมคอมพิวเตอร์ | มหาวิทยาลัยกาฬสินธุ์
+            </p>
+          </header>
+
+          <Section title="เกี่ยวกับฉัน">
+            <p className="card p-6 rounded-lg">
+              ผมชื่อ กฤษฎา เป็นนักศึกษา วิศวกรรมคอมพิวเตอร์ ที่มีความมุ่งมั่น ณ คณะวิศวกรรมศาสตร์และเทคโนโลยีอุตสาหกรรม มหาวิทยาลัยกาฬสินธุ์ 
+              ด้วยพื้นฐานที่แข็งแกร่งด้านการเขียนโค้ด, การแก้ไขปัญหา และนวัตกรรม ผมตั้งเป้าที่จะสร้างสรรค์โซลูชันที่ทันสมัยเพื่อขับเคลื่อนความก้าวหน้าทางเทคโนโลยี 
+              การศึกษาที่มหาวิทยาลัยกาฬสินธุ์ ซึ่งเป็นสถาบันชั้นนำในการพัฒนาท้องถิ่น ช่วยให้ผมพร้อมที่จะมีส่วนร่วมทั้งในภาคอุตสาหกรรมและชุมชน
+            </p>
+          </Section>
+
+          <Section title="การศึกษา">
+            <div className="card p-6 rounded-lg">
+              <p>
+                <strong>ปริญญาตรี วิศวกรรมคอมพิวเตอร์</strong><br />
+                มหาวิทยาลัยกาฬสินธุ์ (วิทยาเขตในเมือง), 2021 - ปัจจุบัน<br />
+                คณะวิศวกรรมศาสตร์และเทคโนโลยีอุตสาหกรรม<br />
+                รายวิชาที่เกี่ยวข้อง: โครงสร้างข้อมูล, อัลกอริทึม, การพัฒนาเว็บ, ความมั่นคงทางไซเบอร์, ระบบสมองกลฝังตัว<br />
+                <em>“ผลิตบัณฑิตที่มีความเชี่ยวชาญด้านวิศวกรรมและเทคโนโลยี เพื่อตอบสนองความต้องการของอุตสาหกรรมและขับเคลื่อนนวัตกรรม”</em>
+              </p>
+            </div>
+          </Section>
+
+          <Section title="ทักษะ">
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <li className="card p-4 rounded-lg">การเขียนโปรแกรม: Python, JavaScript, C++</li>
+              <li className="card p-4 rounded-lg">การพัฒนาเว็บ: React, Node.js, Tailwind CSS</li>
+              <li className="card p-4 rounded-lg">เครื่องมือ: Git, Docker, VS Code</li>
+              <li className="card p-4 rounded-lg">ทักษะด้านอารมณ์และสังคม: การแก้ปัญหา, การทำงานเป็นทีม, การปรับตัว</li>
+            </ul>
+          </Section>
+
+          <Section title="โครงการ">
+            <div className="space-y-6">
+              <div className="card p-6 rounded-lg">
+                <h3 className="text-xl font-bold">CyberGuard: ระบบตรวจจับการบุกรุก</h3>
+                <p>
+                  พัฒนาระบบตรวจจับการบุกรุกแบบเรียลไทม์โดยใช้ Python และการเรียนรู้ของเครื่อง (Machine Learning) 
+                  เพื่อระบุภัยคุกคามในเครือข่าย พร้อมระบบแดชบอร์ดบนเว็บสำหรับการตรวจสอบ
+                </p>
+              </div>
+              <div className="card p-6 rounded-lg">
+                <h3 className="text-xl font-bold">ระบบบ้านอัจฉริยะ IoT</h3>
+                <p>
+                  สร้างระบบบ้านอัจฉริยะแบบ IoT โดยใช้ Arduino และ Node.js 
+                  ที่ช่วยให้สามารถควบคุมเครื่องใช้ไฟฟ้าจากระยะไกลผ่านแอปพลิเคชันบนมือถือได้
+                </p>
+              </div>
+            </div>
+          </Section>
+
+          <Section title="ความสำเร็จ">
+            <ul className="space-y-4">
+              <li className="card p-4 rounded-lg">อันดับ 1, การแข่งขัน Kalasin University Hackathon 2023 – พัฒนาเครื่องมือด้านความปลอดภัยทางไซเบอร์สำหรับธุรกิจท้องถิ่น</li>
+              <li className="card p-4 rounded-lg">ตีพิมพ์บทความวิจัยเรื่องความมั่นคงปลอดภัย IoT ในวารสารวิศวกรรมศาสตร์ ม.ก.ส.</li>
+              <li className="card p-4 rounded-lg">อาสาสมัครพี่เลี้ยง, ค่ายฝึกเขียนโค้ดสำหรับนักเรียนมัธยมปลายในท้องถิ่น</li>
+            </ul>
+          </Section>
+
+          <Section title="งานอดิเรก">
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <li className="card p-4 rounded-lg">เจาะระบบอย่างมีจริยธรรม (Ethical Hacking) และการแข่งขัน CTF</li>
+              <li className="card p-4 rounded-lg">ประกอบคอมพิวเตอร์และโอเวอร์คล็อกด้วยตนเอง</li>
+              <li className="card p-4 rounded-lg">สำรวจซอฟต์แวร์โอเพนซอร์ส</li>
+              <li className="card p-4 rounded-lg">เล่นวิดีโอเกมแนววางแผน</li>
+            </ul>
+          </Section>
+
+          <Section title="ติดต่อ">
+            <div className="card p-6 rounded-lg">
+              <p>
+                อีเมล: 681540005023-8@ksu.ac.th<br />
+                LinkedIn: linkedin.com/in/krissada-b<br />
+                GitHub: github.com/krissada-b
+              </p>
+            </div>
+          </Section>
+
+          <footer className="text-center py-8 text-gray-400">
+            <p>© 2025 กฤษฎา เมืองบุญ. สร้างสรรค์โดยวิสัยทัศน์เพื่อการพัฒนาท้องถิ่นอย่างยั่งยืนของมหาวิทยาลัยกาฬสินธุ์</p>
+          </footer>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
